@@ -31,7 +31,24 @@ colorized_echo() {
         ;;
     esac
 }
+prompt() {
+  local prompt_text="$1"
+  local default_value="$2"
+  local user_input
 
+  read -p "$prompt_text [$default_value]: " user_input
+  echo "${user_input:-$default_value}"
+}
+
+# Function to install Certbot and acquire SSL certificate
+acquire_ssl_certificate() {
+  local domain="$1"
+  local email="$2"
+
+  sudo apt-get update
+  sudo apt-get install -y certbot
+  sudo certbot certonly --standalone -d "$domain" --non-interactive --agree-tos --email "$email"
+}
 check_running_as_root() {
     if [ "$(id -u)" != "0" ]; then
         colorized_echo red "This command must be run as root."
@@ -134,7 +151,42 @@ install_school_web() {
     colorized_echo blue "Fetching compose file"
     curl -sL "$FILES_URL_PREFIX/docker-compose.yml" -o "$APP_DIR/docker-compose.yml"
     colorized_echo green "File saved in $APP_DIR/docker-compose.yml"
+    # Welcome message
+    echo -e "\033[1;32m"
+    echo "############################################################"
+    echo "#                                                          #"
+    echo "#               Welcome to the School Web Project          #"
+    echo "#                          Setup                           #"
+    echo "#                                                          #"
+    echo "#                       School-Web                         #"
+    echo "#                     by NotMmDG                           #"
+    echo "############################################################"
+    echo -e "\033[0m"
 
+    # Prompt for MySQL and phpMyAdmin credentials with default values
+    MYSQL_DATABASE=$(prompt "Enter MySQL database name" "school")
+    MYSQL_USER=$(prompt "Enter MySQL user" "school_user")
+    MYSQL_PASSWORD=$(prompt "Enter MySQL user password" "school_password")
+    MYSQL_ROOT_PASSWORD=$(prompt "Enter MySQL root password" "root_password")
+    PHPMYADMIN_USER=$(prompt "Enter phpMyAdmin username" "admin")
+    PHPMYADMIN_PASSWORD=$(prompt "Enter phpMyAdmin password" "admin_password")
+    PHPMYADMIN_PORT=$(prompt "Enter phpMyAdmin port" "8080")
+    WEB_PORT=$(prompt "Enter web application port" "8000")
+
+    # Prompt for SSL usage
+    USE_SSL=$(prompt "Do you want to use SSL? (yes/no)" "no")
+    if [ "$USE_SSL" = "yes" ]; then
+    EMAIL=$(prompt "Enter your email for SSL certificate" "admin@example.com")
+    DOMAIN=$(prompt "Enter your domain or subdomain" "example.com")
+    acquire_ssl_certificate "$DOMAIN" "$EMAIL"
+    SSL_CERT_PATH="/etc/letsencrypt/live/$DOMAIN/fullchain.pem"
+    SSL_KEY_PATH="/etc/letsencrypt/live/$DOMAIN/privkey.pem"
+    USE_SSL=true
+    else
+    SSL_CERT_PATH=""
+    SSL_KEY_PATH=""
+    USE_SSL=false
+    fi
     colorized_echo blue "Fetching .env file"
     curl -sL "$FILES_URL_PREFIX/.env.example" -o "$APP_DIR/.env"
     sudo sed -i "s|MYSQL_DATABASE=.*|MYSQL_DATABASE=${MYSQL_DATABASE}|" "$APP_DIR/.env"
