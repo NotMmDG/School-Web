@@ -9,7 +9,11 @@ from dotenv import load_dotenv
 
 # Load environment variables from the mounted .env file
 env_path = '/app/.env'
-load_dotenv(dotenv_path=env_path)
+if not os.path.exists(env_path):
+    print(f"ERROR: .env file not found at {env_path}")
+else:
+    load_dotenv(dotenv_path=env_path)
+    print(f".env file loaded from {env_path}")
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -29,15 +33,12 @@ from app.db.models import Base
 # for 'autogenerate' support
 target_metadata = Base.metadata
 
-# other values from the config, defined by the needs of env.py,
-# can be acquired:
-# my_important_option = config.get_main_option("my_important_option")
-# ... etc.
-
 def get_database_url():
-    print(os.getenv('DATABASE_URL'))
-    return os.getenv('DATABASE_URL')
-    
+    database_url = os.getenv('DATABASE_URL')
+    if not database_url:
+        raise ValueError("DATABASE_URL environment variable not set")
+    print(f"DATABASE_URL: {database_url}")
+    return database_url
 
 def run_migrations_offline():
     """Run migrations in 'offline' mode.
@@ -67,7 +68,8 @@ def run_migrations_online():
         poolclass=pool.NullPool,
     )
 
-    connectable.url = get_database_url()
+    url = get_database_url()
+    connectable.url = url
 
     with connectable.connect() as connection:
         context.configure(connection=connection, target_metadata=target_metadata)
