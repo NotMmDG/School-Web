@@ -29,11 +29,12 @@ services:
 
   school-web:
     image: notmmdg/school-web
+    container_name: school-web
     volumes:
       - /var/lib/school_web:/var/lib/school_web
       - /opt/school-web/.env:/app/.env
     ports:
-      - "${WEB_PORT}:${WEB_PORT}"
+      - "${WEB_PORT}:80"
     env_file: .env
     depends_on:
       - db
