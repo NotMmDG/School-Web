@@ -7,8 +7,8 @@ from sqlalchemy import engine_from_config, pool
 from alembic import context
 from dotenv import load_dotenv
 
-# Load environment variables from the .env file
-env_path = '/opt/school-web/.env'
+# Load environment variables from the mounted .env file
+env_path = '/app/.env'
 load_dotenv(dotenv_path=env_path)
 
 # this is the Alembic Config object, which provides
