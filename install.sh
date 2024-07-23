@@ -61,11 +61,9 @@ fi
 REPO_DIR=$(mktemp -d)
 git clone https://github.com/NotMmDG/School-Web.git "$REPO_DIR"
 
-# Ensure Dockerfile exists
-if [ ! -f "$REPO_DIR/Dockerfile" ]; then
-  echo "Dockerfile not found in the repository. Exiting."
-  exit 1
-fi
+# Build Docker image inside the project directory
+cd "$REPO_DIR"
+sudo docker-compose build
 
 # Create /opt/school-web directory for configurations
 sudo mkdir -p /opt/school-web
@@ -88,12 +86,8 @@ sudo sed -i "s|SSL_CERT_PATH=.*|SSL_CERT_PATH=${SSL_CERT_PATH}|" "$ENV_FILE"
 sudo sed -i "s|SSL_KEY_PATH=.*|SSL_KEY_PATH=${SSL_KEY_PATH}|" "$ENV_FILE"
 sudo sed -i "s|USE_SSL=.*|USE_SSL=${USE_SSL}|" "$ENV_FILE"
 
-# Build Docker image inside the project directory
-cd "$REPO_DIR"
-sudo docker-compose build
-
 # Start Docker containers
-sudo docker-compose -f /opt/school-web/docker-compose.yml up --build -d
+sudo docker-compose -f /opt/school-web/docker-compose.yml up -d
 
 # Remove the cloned repository
 rm -rf "$REPO_DIR"
