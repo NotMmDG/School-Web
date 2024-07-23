@@ -30,12 +30,14 @@ services:
   web:
     build: .
     container_name: school_web
+    network_mode: host
     command: >
       sh -c "alembic upgrade head && uvicorn main:app --host 0.0.0.0 --port ${WEB_PORT}"
     volumes:
-      - .:/app
+      - /var/lib/school_web:/var/lib/school_web
     ports:
       - "${WEB_PORT}:${WEB_PORT}"
+    env_file: .env
     depends_on:
       - db
     networks:
