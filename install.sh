@@ -150,7 +150,9 @@ install_school_web() {
 
     colorized_echo blue "Fetching compose file"
     curl -sL "$FILES_URL_PREFIX/docker-compose.yml" -o "$APP_DIR/docker-compose.yml"
+    curl -sL "$FILES_URL_PREFIX/.env" -o "$APP_DIR/.env"
     colorized_echo green "File saved in $APP_DIR/docker-compose.yml"
+    colorized_echo green "File saved in $APP_DIR/.env"
     # Welcome message
     echo -e "\033[1;32m"
     echo "############################################################"
