@@ -7,6 +7,9 @@ from app.db import crud, models, schemas, database
 from app.utils import auth
 from app.routers import students
 from app.utils.auth import oauth2_scheme
+from env import get_settings
+
+settings = get_settings()
 
 app = FastAPI()
 
