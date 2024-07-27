@@ -34,7 +34,7 @@ services:
     container_name: school-web
     volumes:
       - /var/lib/school_web:/var/lib/school_web
-      - /app/.env:/opt/school-web/.env
+      - /opt/school-web/.env:app/.env
     ports:
       - "${WEB_PORT}:80"
     depends_on:
