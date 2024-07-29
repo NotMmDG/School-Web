@@ -8,7 +8,7 @@ class Settings:
         env_path = os.path.join(os.path.dirname(__file__), 'app', '.env')
 
         # Load environment variables from the .env file
-        load_dotenv(dotenv_path=env_path)
+        load_dotenv()
 
         # Determine the environment and select the appropriate database URL
         environment = os.getenv('ENVIRONMENT', 'development')
