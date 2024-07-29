@@ -8,7 +8,7 @@ from alembic import context
 # Add the root directory to sys.path so we can import env.py
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')))
 
-from env import get_settings
+from config import get_settings
 
 # Load the settings
 settings = get_settings()
