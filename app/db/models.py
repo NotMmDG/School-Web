@@ -2,20 +2,15 @@ from sqlalchemy import Column, Integer, String, Date, ForeignKey, Table, Boolean
 from sqlalchemy.orm import relationship
 from .base import Base
 
-# Association tables for many-to-many relationships
-student_section_association = Table(
-    'student_section',
-    Base.metadata,
-    Column('student_id', Integer, ForeignKey('student.SId', ondelete='CASCADE'), primary_key=True),
-    Column('section_id', Integer, ForeignKey('section.SecId', ondelete='CASCADE'), primary_key=True)
-)
+class StudentSection(Base):
+    __tablename__ = 'student_section'
+    student_id = Column(Integer, ForeignKey('student.SId', ondelete='CASCADE'), primary_key=True)
+    section_id = Column(Integer, ForeignKey('section.SecId', ondelete='CASCADE'), primary_key=True)
 
-college_dept_association = Table(
-    'college_dept',
-    Base.metadata,
-    Column('college_id', Integer, ForeignKey('college.CID', ondelete='CASCADE'), primary_key=True),
-    Column('dept_code', Integer, ForeignKey('dept.DCode', ondelete='CASCADE'), primary_key=True)
-)
+class CollegeDept(Base):
+    __tablename__ = 'college_dept'
+    college_id = Column(Integer, ForeignKey('college.CID', ondelete='CASCADE'), primary_key=True)
+    dept_code = Column(Integer, ForeignKey('dept.DCode', ondelete='CASCADE'), primary_key=True)
 
 class User(Base):
     __tablename__ = 'user'
@@ -56,7 +51,7 @@ class College(Base):
     dean = Column('CDean', Integer)
     apikey = Column('apikey', String(255), nullable=False)
 
-    depts = relationship('Dept', secondary=college_dept_association, back_populates='colleges')
+    depts = relationship('Dept', secondary='college_dept', back_populates='colleges')
 
 class Course(Base):
     __tablename__ = 'course'
@@ -86,7 +81,7 @@ class Dept(Base):
     phone = Column('DPhone', String(255))
     college_id = Column('CID', Integer, ForeignKey('college.CID'))
 
-    colleges = relationship('College', secondary=college_dept_association, back_populates='depts')
+    colleges = relationship('College', secondary='college_dept', back_populates='depts')
     professors = relationship('Professor', back_populates='department')
     employees = relationship('Employee', back_populates='department')
     students = relationship('Student', back_populates='department')
@@ -144,7 +139,7 @@ class Section(Base):
     course_code = Column('CCode', Integer, ForeignKey('course.CCode'))
     professor_id = Column('PId', Integer, ForeignKey('professor.PId'))
 
-    students = relationship('Student', secondary=student_section_association, back_populates='sections')
+    students = relationship('Student', secondary='student_section', back_populates='sections')
     room = relationship('Room', back_populates='sections')
     course = relationship('Course', back_populates='sections')
     professor = relationship('Professor', back_populates='sections')
@@ -159,7 +154,7 @@ class Student(Base):
     dept_code = Column('DCode', Integer, ForeignKey('dept.DCode'))
 
     borrows = relationship("Borrow", back_populates="student", cascade="all, delete-orphan")
-    sections = relationship('Section', secondary=student_section_association, back_populates='students')
+    sections = relationship('Section', secondary='student_section', back_populates='students')
     takes = relationship('Takes', back_populates='student', cascade="all, delete-orphan")
     department = relationship('Dept', back_populates='students')
 

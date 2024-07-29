@@ -3,11 +3,11 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
-
+from config import get_settings
 # Load environment variables from .env file
-load_dotenv()
+settings=get_settings()
 
-DATABASE_URL = os.getenv("DATABASE_URL")
+DATABASE_URL = settings.database_url
 
 if not DATABASE_URL:
     raise ValueError("No DATABASE_URL found in environment variables")
