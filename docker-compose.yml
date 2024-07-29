@@ -34,6 +34,7 @@ services:
     container_name: school-web
     restart: always
     env_file: .env
+    command: ["sh", "-c", "while true; do sleep 30; done;"]
     volumes:
       - /var/lib/school_web:/var/lib/school_web
     ports:
