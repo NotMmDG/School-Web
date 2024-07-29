@@ -60,11 +60,11 @@ def upgrade() -> None:
     if not op.get_bind().dialect.has_table(op.get_bind(), 'user'):
         op.create_table('user',
         sa.Column('id', sa.Integer(), nullable=False),
-        sa.Column('username', sa.String(), nullable=True),
-        sa.Column('email', sa.String(), nullable=True),
-        sa.Column('hashed_password', sa.String(), nullable=True),
+        sa.Column('username', sa.String(length=255), nullable=True),
+        sa.Column('email', sa.String(length=255), nullable=True),
+        sa.Column('hashed_password', sa.String(length=255), nullable=True),
         sa.Column('is_active', sa.Boolean(), nullable=True),
-        sa.Column('role', sa.String(), nullable=True),
+        sa.Column('role', sa.String(length=255), nullable=True),
         sa.PrimaryKeyConstraint('id')
         )
         op.create_index(op.f('ix_user_email'), 'user', ['email'], unique=True)
