@@ -12,6 +12,7 @@ from config import get_settings
 
 # Load the settings
 settings = get_settings()
+print(settings.DATABASE_URL)
 
 # This is the Alembic Config object, which provides access to the values within the .ini file in use.
 config = settings.update_alembic_config()
