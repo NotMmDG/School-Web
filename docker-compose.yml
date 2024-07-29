@@ -32,9 +32,10 @@ services:
   school-web:
     image: notmmdg/school-web
     container_name: school-web
+    restart: always
+    env_file: .env
     volumes:
       - /var/lib/school_web:/var/lib/school_web
-      - /opt/school-web/.env:/app/.env
     ports:
       - "443:80"
     depends_on:
