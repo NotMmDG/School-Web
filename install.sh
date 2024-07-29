@@ -166,14 +166,8 @@ install_school_web() {
     echo -e "\033[0m"
 
     # Prompt for MySQL and phpMyAdmin credentials with default values
-    MYSQL_DATABASE=$(prompt "Enter MySQL database name" "school")
-    MYSQL_USER=$(prompt "Enter MySQL user" "school_user")
-    MYSQL_PASSWORD=$(prompt "Enter MySQL user password" "school_password")
-    MYSQL_ROOT_PASSWORD=$(prompt "Enter MySQL root password" "root_password")
-    PHPMYADMIN_USER=$(prompt "Enter phpMyAdmin username" "admin")
-    PHPMYADMIN_PASSWORD=$(prompt "Enter phpMyAdmin password" "admin_password")
-    PHPMYADMIN_PORT=$(prompt "Enter phpMyAdmin port" "8080")
     WEB_PORT=$(prompt "Enter web application port" "8000")
+    DB_PASSWORD=$(prompt "Enter database password" "DB_PASSWORD")
 
     # Prompt for SSL usage
     USE_SSL=$(prompt "Do you want to use SSL? (yes/no)" "no")
@@ -191,13 +185,7 @@ install_school_web() {
     fi
     colorized_echo blue "Fetching .env file"
     curl -sL "$FILES_URL_PREFIX/.env.example" -o "$APP_DIR/.env"
-    sudo sed -i "s|MYSQL_DATABASE=.*|MYSQL_DATABASE=${MYSQL_DATABASE}|" "$APP_DIR/.env"
-    sudo sed -i "s|MYSQL_USER=.*|MYSQL_USER=${MYSQL_USER}|" "$APP_DIR/.env"
-    sudo sed -i "s|MYSQL_PASSWORD=.*|MYSQL_PASSWORD=${MYSQL_PASSWORD}|" "$APP_DIR/.env"
-    sudo sed -i "s|MYSQL_ROOT_PASSWORD=.*|MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}|" "$APP_DIR/.env"
-    sudo sed -i "s|PHPMYADMIN_USER=.*|PHPMYADMIN_USER=${PHPMYADMIN_USER}|" "$APP_DIR/.env"
-    sudo sed -i "s|PHPMYADMIN_PASSWORD=.*|PHPMYADMIN_PASSWORD=${PHPMYADMIN_PASSWORD}|" "$APP_DIR/.env"
-    sudo sed -i "s|PHPMYADMIN_PORT=.*|PHPMYADMIN_PORT=${PHPMYADMIN_PORT}|" "$APP_DIR/.env"
+    sudo sed -i "s|DB_PASSWORD=.*|DB_PASSWORD=${DB_PASSWORD}|" "$APP_DIR/.env"
     sudo sed -i "s|WEB_PORT=.*|WEB_PORT=${WEB_PORT}|" "$APP_DIR/.env"
     sudo sed -i "s|SSL_CERT_PATH=.*|SSL_CERT_PATH=${SSL_CERT_PATH}|" "$APP_DIR/.env"
     sudo sed -i "s|SSL_KEY_PATH=.*|SSL_KEY_PATH=${SSL_KEY_PATH}|" "$APP_DIR/.env"

@@ -1,50 +1,35 @@
 version: '3.8'
 
 services:
-  db:
+  mysql:
     image: mysql:latest
-    container_name: school_db
+    restart: always
+    env_file: .env
+    network_mode: host
+    command: --bind-address=127.0.0.1 --mysqlx-bind-address=127.0.0.1 --disable-log-bin
     environment:
-      MYSQL_DATABASE: MYSQL_DATABASE
-      MYSQL_USER: MYSQL_USER
-      MYSQL_PASSWORD: MYSQL_PASSWORD
-      MYSQL_ROOT_PASSWORD: MYSQL_ROOT_PASSWORD
+      MYSQL_DATABASE: school_web
     volumes:
-      - db_data:/var/lib/mysql
-    ports:
-      - "3306:3306"
-    networks:
-      - school-network
+      - /var/lib/school_web/mysql:/var/lib/mysql
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin:latest
-    container_name: phpmyadmin
+    restart: always
+    env_file: .env
+    network_mode: host
     environment:
-      PMA_HOST: db
-      MYSQL_ROOT_PASSWORD: MYSQL_ROOT_PASSWORD
-      PMA_USER: PHPMYADMIN_USER
-      PMA_PASSWORD: PHPMYADMIN_PASSWORD
-    ports:
-      - "8080:80"
-    networks:
-      - school-network
+      PMA_HOST: 127.0.0.1
+      APACHE_PORT: 8010
+      UPLOAD_LIMIT: 1024M
+    depends_on:
+      - mysql
 
   school-web:
     image: notmmdg/school-web
-    container_name: school-web
     restart: always
     env_file: .env
+    network_mode: host
     volumes:
       - /var/lib/school_web:/var/lib/school_web
-    ports:
-      - "443:80"
     depends_on:
-      - db
-    networks:
-      - school-network
-
-volumes:
-  db_data:
-
-networks:
-  school-network:
+      - mysql
