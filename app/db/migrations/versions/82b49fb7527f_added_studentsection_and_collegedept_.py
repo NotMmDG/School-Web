@@ -1,8 +1,8 @@
 """Added StudentSection and CollegeDept models
 
-Revision ID: 2188c35c84bf
+Revision ID: 82b49fb7527f
 Revises: 
-Create Date: 2024-07-29 13:48:27.513970
+Create Date: 2024-07-29 13:59:11.820340
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '2188c35c84bf'
+revision = '82b49fb7527f'
 down_revision = None
 branch_labels = None
 depends_on = None
