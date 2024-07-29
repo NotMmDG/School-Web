@@ -12,6 +12,13 @@ class CollegeDept(Base):
     college_id = Column(Integer, ForeignKey('college.CID', ondelete='CASCADE'), primary_key=True)
     dept_code = Column(Integer, ForeignKey('dept.DCode', ondelete='CASCADE'), primary_key=True)
 
+class Enroll(Base):
+    __tablename__ = 'enroll'
+    id = Column(Integer, primary_key=True, index=True)
+    student_id = Column(Integer, ForeignKey('student.SId'))
+    course_code = Column(Integer, ForeignKey('course.CCode'))
+    date_enrolled = Column(Date)
+
 class User(Base):
     __tablename__ = 'user'
     id = Column(Integer, primary_key=True, index=True)
