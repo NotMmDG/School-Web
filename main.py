@@ -1,19 +1,36 @@
 import logging
-from datetime import timedelta
-from fastapi import Depends, FastAPI, HTTPException, Request, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+import time
+from fastapi import FastAPI, Request, Depends, HTTPException
+from fastapi.responses import JSONResponse
+from starlette.middleware.base import BaseHTTPMiddleware
 from sqlalchemy.orm import Session
-from app.db import crud, models, schemas, database
-from app.utils import auth
-from app.routers import students
-from app.utils.auth import oauth2_scheme
-from config import get_settings
+from app.db import crud, models, database, schemas
+from app.utils.auth import get_current_user, authenticate_user, create_access_token
+from fastapi.security import OAuth2PasswordRequestForm
+from datetime import timedelta
 
-settings = get_settings()
+logger = logging.getLogger("main")
+logging.basicConfig(level=logging.INFO)
 
 app = FastAPI()
 
-# Database Dependency
+# Middleware to log requests and responses
+class LoggingMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        start_time = time.time()
+        logger.info(f"Request: {request.method} {request.url}")
+        response = await call_next(request)
+        process_time = time.time() - start_time
+        if hasattr(response, "body"):
+            logger.info(f"Response: {response.status_code} {response.body}")
+        else:
+            logger.info(f"Response: {response.status_code} (streaming response)")
+        logger.info(f"Process time: {process_time:.4f} sec")
+        return response
+
+app.add_middleware(LoggingMiddleware)
+
+# Dependency to get DB session
 def get_db():
     db = database.SessionLocal()
     try:
@@ -21,48 +38,17 @@ def get_db():
     finally:
         db.close()
 
-# Include Routers
-app.include_router(students.router)
-
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[
-        logging.FileHandler("app.log"),
-        logging.StreamHandler()
-    ]
-)
-
-logger = logging.getLogger(__name__)
-
-@app.middleware("http")
-async def log_requests(request: Request, call_next):
-    logger.info(f"Request: {request.method} {request.url}")
-    response = await call_next(request)
-    logger.info(f"Response: {response.status_code} {response.body}")
-    return response
-
-logger.info("App startup complete")
-
+# Token endpoint
 @app.post("/token", response_model=schemas.Token)
-def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    user = crud.authenticate_user(db, form_data.username, form_data.password)
+async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    user = authenticate_user(db, form_data.username, form_data.password)
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    access_token_expires = timedelta(minutes=auth.ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = auth.create_access_token(
-        data={"sub": user.email}, expires_delta=access_token_expires
-    )
+        raise HTTPException(status_code=400, detail="Incorrect username or password")
+    access_token_expires = timedelta(minutes=15)
+    access_token = create_access_token(data={"sub": user.username}, expires_delta=access_token_expires)
     return {"access_token": access_token, "token_type": "bearer"}
 
-@app.post("/users/", response_model=schemas.UserOut)
-def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
-    db_user = crud.get_user_by_email(db, email=user.email)
-    if db_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
-    return crud.create_user(db=db, user=user)
+# Current user endpoint
+@app.get("/users/me", response_model=schemas.UserOut)
+async def read_users_me(current_user: schemas.UserOut = Depends(get_current_user)):
+    return current_user
