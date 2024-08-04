@@ -4,10 +4,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from datetime import timedelta
-from fastapi.responses import HTMLResponse
+from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from app.db import models, database, schemas, crud
-from app.utils.auth import get_current_user, authenticate_user, create_access_token
+from app.utils.auth import authenticate_user, create_access_token
+import os
 
 # Initialize the logger
 logger = logging.getLogger("uvicorn")
@@ -23,6 +24,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Serve static files
+app.mount("/static", StaticFiles(directory="app/frontend/public"), name="static")
 
 # Dependency to get DB session
 def get_db():
@@ -57,26 +61,21 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db:
     return {"access_token": access_token, "token_type": "bearer"}
 
 # Include other routers
-from app.routers import students, books, borrows, colleges, courses, depts, educational_employees, employees, grades, professors, rooms, sections, takes
+from app.routers import students, books, borrows, colleges, courses, depts, educational_employees
 
-app.include_router(students.router, prefix="/api/v1")
-app.include_router(books.router, prefix="/api/v1")
-app.include_router(borrows.router, prefix="/api/v1")
-app.include_router(colleges.router, prefix="/api/v1")
-app.include_router(courses.router, prefix="/api/v1")
-app.include_router(depts.router, prefix="/api/v1")
-app.include_router(educational_employees.router, prefix="/api/v1")
-app.include_router(employees.router, prefix="/api/v1")
-app.include_router(grades.router, prefix="/api/v1")
-app.include_router(professors.router, prefix="/api/v1")
-app.include_router(rooms.router, prefix="/api/v1")
-app.include_router(sections.router, prefix="/api/v1")
-app.include_router(takes.router, prefix="/api/v1")
+app.include_router(students.router)
+app.include_router(books.router)
+app.include_router(borrows.router)
+app.include_router(colleges.router)
+app.include_router(courses.router)
+app.include_router(depts.router)
+app.include_router(educational_employees.router)
 
-# Serve React static files
-app.mount("/static", StaticFiles(directory="path_to_your_react_build/static"), name="static")
+# Catch-all route to serve the frontend
+@app.get("/{full_path:path}")
+async def serve_frontend(full_path: str):
+    return FileResponse('app/frontend/public/index.html')
 
-@app.get("/{full_path:path}", response_class=HTMLResponse)
-async def serve_react_app(full_path: str):
-    with open("path_to_your_react_build/index.html") as f:
-        return HTMLResponse(content=f.read(), status_code=200)
+if __name__ == '__main__':
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=int(os.getenv("WEB_PORT", 8000)))
