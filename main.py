@@ -1,9 +1,11 @@
 import logging
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from datetime import timedelta
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from app.db import models, database, schemas, crud
 from app.utils.auth import get_current_user, authenticate_user, create_access_token
 
@@ -32,7 +34,7 @@ def get_db():
 
 # Log requests
 @app.middleware("http")
-async def log_requests(request, call_next):
+async def log_requests(request: Request, call_next):
     logger.info(f"Request: {request.method} {request.url}")
     response = await call_next(request)
     logger.info(f"Response: {response.status_code}")
@@ -70,3 +72,11 @@ app.include_router(professors.router, prefix="/api/v1")
 app.include_router(rooms.router, prefix="/api/v1")
 app.include_router(sections.router, prefix="/api/v1")
 app.include_router(takes.router, prefix="/api/v1")
+
+# Serve React static files
+app.mount("/static", StaticFiles(directory="path_to_your_react_build/static"), name="static")
+
+@app.get("/{full_path:path}", response_class=HTMLResponse)
+async def serve_react_app(full_path: str):
+    with open("path_to_your_react_build/index.html") as f:
+        return HTMLResponse(content=f.read(), status_code=200)
